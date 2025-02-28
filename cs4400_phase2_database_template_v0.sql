@@ -73,7 +73,7 @@ CREATE TABLE leg (
         FOREIGN KEY (destination_airportID) REFERENCES airport(airportID)
 ) ENGINE=InnoDB;
 
-CREATE TABLE Contains (
+CREATE TABLE containTable (
     routeID VARCHAR(50) NOT NULL,
     legID VARCHAR(50) NOT NULL,
     sequence INT,
@@ -89,7 +89,7 @@ CREATE TABLE airplane (
     airlineID VARCHAR(50) NOT NULL,
     manufacturer ENUM('Airbus','Boeing') NOT NULL,
     seat_cap SMALLINT UNSIGNED NOT NULL CHECK (seat_cap > 0),
-    speed SMALLINT CHECK (speed BETWEEN 400 AND 700),
+    speed int,
     locID VARCHAR(50),
     PRIMARY KEY(tail_num, airlineID),
     CONSTRAINT fk_airplane_airline
@@ -126,29 +126,18 @@ CREATE TABLE person (
         FOREIGN KEY (locID) REFERENCES location(locID)
 ) ENGINE=InnoDB;
 
-CREATE TABLE pilot (
-    personID VARCHAR(50) NOT NULL,
-    taxID CHAR(11) NOT NULL,  
-    experience INT,
-    flightID VARCHAR(50),
-    PRIMARY KEY (personID, taxID),  
-    UNIQUE (taxID),  
-    CONSTRAINT fk_pilot_person
-        FOREIGN KEY (personID) REFERENCES person(personID),
-    CONSTRAINT fk_pilot_flight
-        FOREIGN KEY (flightID) REFERENCES flight(flightID)
-) ENGINE=InnoDB;
 
 CREATE TABLE license (
-    License INT AUTO_INCREMENT,
-    taxID CHAR(11) NOT NULL,
-    primary key(License, taxid), 
+    license_type INT AUTO_INCREMENT,
+    taxID CHAR(11) NOT NULL unique,
+	personID VARCHAR(50) NOT NULL,
+    primary key(license_type, personID), 
     CONSTRAINT fk_license_pilot
-        FOREIGN KEY (taxID) REFERENCES pilot(taxID)
+        FOREIGN KEY (personID) REFERENCES pilot(personID)
 ) ENGINE=InnoDB;
 
 CREATE TABLE flight (
-    flightID VARCHAR(50),
+    flightID VARCHAR(50) PRIMARY KEY,
     routeID VARCHAR(50) NOT NULL,
     tail_num VARCHAR(10) NOT NULL,
     airlineID VARCHAR(50) NOT NULL,
@@ -156,11 +145,20 @@ CREATE TABLE flight (
     status ENUM('on_ground', 'in_flight'),
     next_time DATETIME,
     cost DECIMAL(8,2) NOT NULL CHECK (cost > 0),
-    PRIMARY KEY(flightID, tail_num,airlineID),
     CONSTRAINT fk_flight_route
         FOREIGN KEY (routeID) REFERENCES route(routeID),
     CONSTRAINT fk_flight_airplane
         FOREIGN KEY (tail_num, airlineID) REFERENCES airplane(tail_num, airlineID)
+) ENGINE=InnoDB;
+CREATE TABLE pilot (
+    personID VARCHAR(50) PRIMARY KEY,
+    taxID CHAR(11) NOT NULL UNIQUE, 
+    experience INT,
+    flightID VARCHAR(50),
+    CONSTRAINT fk_pilot_person
+        FOREIGN KEY (personID) REFERENCES person(personID),
+    CONSTRAINT fk_pilot_flight
+        FOREIGN KEY (flightID) REFERENCES flight(flightID)
 ) ENGINE=InnoDB;
 
 CREATE TABLE passenger (
@@ -207,11 +205,11 @@ INSERT INTO airport (airportID, name, city, state, country) VALUES
 ('LAX', 'Los Angeles International', 'Los Angeles', 'California', 'US'),
 ('ORD', 'O''Hare International', 'Chicago', 'Illinois', 'US'),
 ('AMS', 'Amsterdam Airport Schiphol', 'Amsterdam', 'North Holland', 'NL'),
-('CDG', 'Charles de Gaulle Airport', 'Paris', 'Île-de-France', 'FR'),
+('CDG', 'Charles de Gaulle Airport', 'Paris', 'ÃŽle-de-France', 'FR'),
 ('FRA', 'Frankfurt Airport', 'Frankfurt', 'Hesse', 'DE'),
-('MAD', 'Adolfo Suárez Madrid–Barajas Airport', 'Madrid', 'Madrid', 'ES'),
-('BCN', 'Barcelona–El Prat Airport', 'Barcelona', 'Catalonia', 'ES'),
-('FCO', 'Leonardo da Vinci–Fiumicino Airport', 'Rome', 'Lazio', 'IT'),
+('MAD', 'Adolfo SuÃ¡rez Madridâ€“Barajas Airport', 'Madrid', 'Madrid', 'ES'),
+('BCN', 'Barcelonaâ€“El Prat Airport', 'Barcelona', 'Catalonia', 'ES'),
+('FCO', 'Leonardo da Vinciâ€“Fiumicino Airport', 'Rome', 'Lazio', 'IT'),
 ('LGW', 'London Gatwick', 'London', 'England', 'GB'),
 ('MUC', 'Munich Airport', 'Munich', 'Bavaria', 'DE'),
 ('IAH', 'George Bush Intercontinental', 'Houston', 'Texas', 'US'),
@@ -256,5 +254,4 @@ INSERT INTO airplane (tail_num, airlineID, manufacturer, model, variant, seat_ca
 ('n448cs','American','Boeing','787','Dreamliner',4,400,NULL),
 ('n225sb','American','Airbus',NULL,NULL,8,800,NULL),
 ('n553qn','American','Airbus',NULL,NULL,5,800,'plane_2');
-
 
